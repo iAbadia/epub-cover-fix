@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload EPUB</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .dragging {
+      animation: pulse-border 1.2s infinite;
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col gap-4 items-center justify-center bg-gray-100">
+
+  <div id="dropzone" 
+    class="relative w-96 h-48 border-4 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ease-in-out cursor-pointer bg-white hover:border-blue-500">
+
+    <p class="text-gray-500 text-center">Click to choose an EPUB file<br>or drag and drop here</p>
+    <input id="fileInput" type="file" accept=".epub" class="absolute inset-0 opacity-0 cursor-pointer" />
+
+  </div>
+
+  <p id="message" class="text-red-500 text-sm hidden">Invalid file type. Please upload an EPUB file.</p>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const message = document.getElementById('message');
+
+    function validateFile(file) {
+      console.log('File detected:', file);
+
+      // Check if file is EPUB based on MIME type and extension
+      const validMime = 'application/epub+zip';
+      const validExt = /\.epub$/i;
+
+      if ((file.type === validMime) || validExt.test(file.name)) {
+        message.classList.add('hidden');
+        console.log('✅ Valid EPUB file:', file.name);
+        // Here you can continue processing the file (e.g., upload, read)
+      } else {
+        message.classList.remove('hidden');
+        console.warn('❌ Invalid file type:', file.type);
+      }
+    }
+
+    // Click input behavior
+    fileInput.addEventListener('change', (e) => {
+      if (fileInput.files.length > 0) {
+        validateFile(fileInput.files[0]);
+      }
+    });
+
+    // Drag & drop behavior
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragging');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragging');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        validateFile(files[0]);
+      }
+    });
+
+    // Click behavior to open file picker
+    dropzone.addEventListener('click', () => fileInput.click());
+  </script>
+
+</body>
+</html>
